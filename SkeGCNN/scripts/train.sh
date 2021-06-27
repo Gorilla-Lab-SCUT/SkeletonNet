@@ -1,0 +1,9 @@
+gpu=0
+basemesh_root='your own basemesh info folder'
+checkpoint='all_e2000_n1'
+load_model=False
+w_e=2000
+w_n=1
+lr=0.0001
+epochs=40
+CUDA_VISIBLE_DEVICES=$gpu python train.py --basemesh_root $basemesh_root --checkpoint $checkpoint --load_model $load_model --learning_rate $lr --epochs $epochs --weight_edge $w_e --weight_normal $w_n --num_sample 0 

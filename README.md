@@ -1,31 +1,44 @@
-This repository constains the codes and [ShapeNetV1-Surface-Skeleton](https://drive.google.com/file/d/1FlXiWFuBbryyNvyH07kGGl9WlmuYPVAP/view?usp=sharing),[ShapNetV1-SkeletalVolume](https://drive.google.com/file/d/1gmT6wF-wLYoa_CWfNsPYd0QtwW0V9NqB/view?usp=sharing) and 2d image datasets [ShapeNetRendering](http://cvgl.stanford.edu/data2/ShapeNetRendering.tgz).
-Please download the above datasets at the first,  and then put them under the ```SkeletonNet/data``` folder.
+# SkeletonNet
 
-### Prepare Skeleton points/volumes
+This repository constains the codes and [ShapeNetV1-Surface-Skeleton](https://drive.google.com/file/d/1FlXiWFuBbryyNvyH07kGGl9WlmuYPVAP/view?usp=sharing),[ShapNetV1-SkeletalVolume](https://drive.google.com/file/d/1gmT6wF-wLYoa_CWfNsPYd0QtwW0V9NqB/view?usp=sharing) and 2d image datasets [ShapeNetRendering](http://cvgl.stanford.edu/data2/ShapeNetRendering.tgz).
+Please download the above datasets at the first,  and then put them under the ```SkeletonNet/sharedata``` folder.
+
+## Prepare Skeleton points/volumes
+
 * If you want to use our skeletal point cloud extraction code, you can download the [skeleton extraction code](https://drive.google.com/file/d/1SGL8LJl1kgtUzM8_COwMMo-SzCPSpNLz/view?usp=sharing). This code is built on Visual Studio2013 + Qt. 
 * If you want to convert the skeletal point clouds to skeletal volumes, you can run the below scripts.
+
 ```shell 
-python data/prepare_skeletalvolume.py --cats 03001627 --vx_res 32
-python data/prepare_skeletalvolume2.py --cats 03001627 --vx_res 64
-python data/prepare_skeletalvolume2.py --cats 03001627 --vx_res 128
-python data/prepare_skeletalvolume2.py --cats 03001627 --vx_res 256
+python sharedata/prepare_skeletalvolume.py --cats 03001627 --vx_res 32
+python sharedata/prepare_skeletalvolume2.py --cats 03001627 --vx_res 64
+python sharedata/prepare_skeletalvolume2.py --cats 03001627 --vx_res 128
+python sharedata/prepare_skeletalvolume2.py --cats 03001627 --vx_res 256
 ```
 
 Before running above scripts, you need to change ```raw_pointcloud_dir and upsample_skeleton_dir``` used when extracting skeletal points.
 
-### Installation
+## Installation
+
 First you need to create an anaconda environment called SkeletonNet using
 ```shell
 conda env create -f environment.yaml
 conda activate SkeletonNet
 ```
 
+## Implementation details
 
-### Implementation details
-For each stage, please follow the README.md under the ```Skeleton_Inference/Explicit_mesh/Implicit_mesh``` folder.
+For each stage, please follow the README.md under the ```Skeleton_Inference/SkeGCNN/SkeDISN``` folder.
 
 
-### Citing this work
+## Demo
+
+
+
+## Evalation 
+
+Please refer to the README.md under the ```./SkeDISN``` folder.
+
+## Citation
 If you find this work useful in your research, please consider citing:
 ```shell
 @InProceedings{Tang_2019_CVPR,
@@ -44,5 +57,5 @@ year = {2019}
 }
 ```
 
-### Contact 
+## Contact 
 If you have any questions,  please feel free to contact with Tang Jiapeng msjptang@mail.scut.edu.cn.

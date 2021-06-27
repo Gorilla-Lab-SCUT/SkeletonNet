@@ -1,0 +1,8 @@
+#raw
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./isosurface/:/home/xharlie/dev/isosurface/tbb/tbb2018_20180822oss/lib/intel64/gcc4.7:/opt/intel/lib/intel64:/opt/intel/mkl/lib/intel64:/usr/local/lib64:/usr/local/lib:/usr/local/cuda/lib64
+
+#LD_LIBRARY_PATH installed by me.
+#error while loading shared libraries: libtbb_preview.so.2: cannot open shared object file: No such file or directory
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./isosurface/:/home/lab-tang.jiapeng/intel/lib/intel64/:/home/lab-tang.jiapeng/intel/mkl/lib/intel64/:/home/lab-tang.jiapeng/intel/tbb/lib/intel64_lin/gcc4.7/:/usr/local/lib/:/usr/local/cuda/lib64/:
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./isosurface/:/home/lab-tang.jiapeng/intel/lib/intel64/:/home/lab-tang.jiapeng/intel/mkl/lib/intel64/:/usr/local/lib/:/usr/local/cuda/lib64/:/data/tang.jiapeng/3d_recon/DISN/isosurface/tbb/tbb2018_20180822oss/lib/intel64/gcc4.7/

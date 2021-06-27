@@ -1,4 +1,10 @@
-### Compile Chamfer Distance
+# SkeletoneNet
+
+<p align="center">
+  <img src="./images/SkeletonNet.png" />
+</p>
+
+## Compile Chamfer Distance
 You need to compile chamfer distance used for both training and evalution.
 ```shell
 cd extention
@@ -6,7 +12,7 @@ python setup.py install
 cd ..
 ```
 
-### Compile other external function
+## Compile other external function
 * You also need to compile other functions (marching cubes and mesh simplification). These useful codes are from [Occupancy Network](https://github.com/autonomousvision/occupancy_networks). Thanks for their contributions.
 * To do so, just run the below script.
 ```shell
@@ -14,7 +20,7 @@ python setup.py build_ext --inplace
 ```
 
 
-### Training
+## Training
 1. SkeAE: Skeletal points auto encoder
 ```shell 
 bash scripts/all/ae_cursur.sh
@@ -36,7 +42,7 @@ bash scripts/all/local.sh
 bash scripts/all/end2end.sh
 ```
 
-### Skeletal Point Sets Generation & Evaluation
+## Skeletal Point Sets Generation & Evaluation
 1. Generating from skeletal points regression module or end-to-end SkeletonNet module:
 ```shell 
 python skeleton_gen/SVR_CurSur.py --category chair --model $model_ske
@@ -49,7 +55,7 @@ python volume_eval/eval_end2end.py  --category chair --model $model_end2end --ou
 python skeletal_eval/eval_cd.py --category chair --log_dir ./skeleton_eval --cal_dir $your skeleton output_dir
 ```
 
-### Skeletal Volume Generation & Evaluation
+## Skeletal Volume Generation & Evaluation
 1. Generating from skeletal volume refinement module and end-to-end SkeletonNet module:
 ```shell
 python volume_eval/eval_local.py --category all --model_ske $model_ske --model $model_volume --th $threshold
@@ -66,7 +72,7 @@ python volume_gen/gen_end2end.py --category all --model $model_end2end --th $thr
 * When extracting coarse meshes to bridge explicit mesh generation, you need to add ```--save_mesh --outdir_mesh $your basemesh output_dir```.
 * When generating refined volumes to regularize implicit mesh generation, you need to add ```--save_vox_h5 --outdir_vox $your volume output dir```.
 
-### Demo
+## Demo
 * We provide a demo for skeletal volume generation from RGB images via learning immediate skeletal points.
 You can download the pretrained model from [here](https://drive.google.com/file/d/1I5QmNDhuJu4Er2VKN7mZ7uzJjnu8gQqn/view?usp=sharing), and put it under the ```checkpoints/all``` folder.
 * Run the demo by the below scrript:

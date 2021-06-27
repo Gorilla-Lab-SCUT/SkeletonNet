@@ -1,0 +1,1 @@
+python train/train_sdf.py --gpu 0 --binary --img_feat_twostream --restore_modelcnn ./models/CNN/pretrained_model/vgg_16.ckpt --log_dir checkpoint/disn_occ --category all --num_sample_points 2048 --batch_size 20 --learning_rate 0.0001 --cat_limit 36000
