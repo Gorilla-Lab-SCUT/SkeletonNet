@@ -230,7 +230,7 @@ class Global_Refinement(nn.Module):
         return occupany32, occupany64, occupany64_softmax
 
 class Hierarchical_Refinement(nn.Module):
-    def __init__(self, num_samples_line=2000, num_samples_triangle=26000, global_only64 = False, woptfeat=False, dist2prob=False, npatch=4, padding16=1, padding32=2):
+    def __init__(self, num_samples_line=2000, num_samples_triangle=26000, global_only64 = False, woptfeat=False, npatch=4, padding16=1, padding32=2):
         super(Hierarchical_Refinement,self).__init__()
         self.feat = PointNetfeatLocal()
         if global_only64:
@@ -283,38 +283,12 @@ class Hierarchical_Refinement(nn.Module):
         else:
             occupany64_softmax_padding = padding_occupancy64_softmax(occupany64_softmax[:, 0:2, ...], self.padding16)
         ####
-        if self.dist2prob:
-            print('Have not implemented now!')
-        else:
-            feat_cell128_padding = batch_grid_pooling128(x, feat_pt, self.padding32)
+        feat_cell128_padding = batch_grid_pooling128(x, feat_pt, self.padding32)
         global_patches, local_patches = crop_global_local_patches(indices_array, occupany64_softmax_padding, feat_cell128_padding, \
                 self.glo_mul, self.glo_pch_res, self.loc_mul, self.loc_pch_res)
         occupancy_patch36, occupany_patch72 = self.local_network(global_patches, local_patches)
         #return cur_up, sur_up, occupany32, occupany64, occupancy_patch36, occupany_patch72
         return occupany32, occupany64, occupancy_patch36, occupany_patch72
-
-    def forward_globalGT_pretrain(self, imgs, curves, lines_array, surfaces, faces_array, indices_array, occupany64_gt):
-        curves_surfaces = torch.cat([curves, surfaces], 1).contiguous()
-        feat_skeleton = self.feat(curves_surfaces)
-        curve_feat = feat_skeleton[:, 0:curves.size(1), :]
-        surface_feat = feat_skeleton[:, curves.size(1):curves_surfaces.size(1), :]
-
-        #uniformly sample the points/features on the lines/triangles
-        curve_samples, curve_sample_feats = batch_sample_lines_feats(curves, lines_array, curve_feat, num=self.num_samples_line)
-        surface_samples, surface_sample_feats = batch_sample_triangles_feats(surfaces, faces_array, surface_feat, num=self.num_samples_triangle)
-        #combine samples with raw
-        x = torch.cat([curves, curve_samples, surfaces, surface_samples], 1).contiguous()
-        feat_pt = torch.cat([curve_feat, curve_sample_feats, surface_feat, surface_sample_feats], 1).contiguous()
-        x, feat_pt = shuffle_points_feat(x, feat_pt)
-        ####
-        occupany64_gt_padding = padding_occupancy64_softmax(occupany64_gt, self.padding16)
-        feat_pt = torch.ones((x.size(0), x.size(1), 1), dtype=torch.float32, device=x.device)
-        ####
-        feat_cell128_padding = batch_grid_pooling128(x, feat_pt, self.padding32)
-        global_patches, local_patches = crop_global_local_patches(indices_array, occupany64_gt_padding, feat_cell128_padding, \
-                self.glo_mul, self.glo_pch_res, self.loc_mul, self.loc_pch_res)
-        occupancy_patch36, occupany_patch72 = self.local_network(global_patches, local_patches)
-        return None, None, occupancy_patch36, occupany_patch72
 
 class ImgToVolume(nn.Module):
     def __init__(self, pretrained_encoder=False, num_points_line = 2048, num_points_square = 2048, bottleneck_size = 512, nb_primitives_line = 1, nb_primitives_square = 1,\
@@ -342,36 +316,6 @@ class ImgToVolume(nn.Module):
     def forward(self, x, indices_array):
         cur_ske, sur_ske = self.img2skeleton.forward_inference(x, self.grid1, self.grid2)
         occupany32, occupany64, occupancy_patch36, occupany_patch72 = self.skeleton2volume(x, cur_ske, self.lines_array, sur_ske, self.faces_array, indices_array)
-        return cur_ske, sur_ske, occupany32, occupany64, occupancy_patch36, occupany_patch72
-
-class ImgToVolume_Rotate(nn.Module):
-    def __init__(self, pretrained_encoder=False, num_points_line = 2048, num_points_square = 2048, bottleneck_size = 512, nb_primitives_line = 1, nb_primitives_square = 1,\
-            num_samples_line=2000, num_samples_triangle=26000, global_only64 = False, woptfeat=False, dist2prob=False):
-        super(ImgToVolume_Rotate, self).__init__()
-        self.pretrained_encoder = pretrained_encoder
-        self.num_points_line = num_points_line
-        self.num_points_square = num_points_square
-        self.bottleneck_size = bottleneck_size
-        self.nb_primitives_line = nb_primitives_line
-        self.nb_primitives_square = nb_primitives_square
-        self.num_samples_line = num_samples_line
-        self.num_samples_triangle = num_samples_triangle
-        self.global_only64 = global_only64
-        self.woptfeat = woptfeat
-        self.dist2prob = dist2prob
-        self.grid1 = None
-        self.grid2 = None
-        self.lines_array = None
-        self.faces_array = None
-        self.img2skeleton = SVR_CurSur(pretrained_encoder = self.pretrained_encoder, num_points_line = self.num_points_line, num_points_square = self.num_points_square, 
-            bottleneck_size = self.bottleneck_size, nb_primitives_line = self.nb_primitives_line, nb_primitives_square = self.nb_primitives_square)
-        self.skeleton2volume = Hierarchical_Refinement(num_samples_line=num_samples_line, num_samples_triangle=self.num_samples_triangle, global_only64 = self.global_only64, dist2prob=self.dist2prob)
-
-    def forward(self, x, rotation, indices_array):
-        cur_ske, sur_ske = self.img2skeleton.forward_inference(x, self.grid1, self.grid2)
-        cur_ske_align = torch.bmm(cur_ske, rotation)
-        sur_ske_align = torch.bmm(sur_ske, rotation)
-        occupany32, occupany64, occupancy_patch36, occupany_patch72 = self.skeleton2volume(x, cur_ske_align, self.lines_array, sur_ske_align, self.faces_array, indices_array)
         return cur_ske, sur_ske, occupany32, occupany64, occupancy_patch36, occupany_patch72
 
 if __name__ == '__main__':

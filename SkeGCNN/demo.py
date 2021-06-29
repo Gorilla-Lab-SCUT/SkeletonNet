@@ -29,7 +29,7 @@ flags.DEFINE_integer('num_samples', 0, 'Number of samples for CD loss.')
 flags.DEFINE_bool('vertex_chamfer', True, 'If compute the cd (vertexes to surface).')
 ###
 flags.DEFINE_string('catname', '03001627', 'the catname of demo')
-flags.DEFINE_string('modname', '2c03bcb2a133ce28bb6caad47eee6580', 'the modname of demo')
+flags.DEFINE_string('modname', '1e304b967d5253d5dd079f8cece51712', 'the modname of demo')
 flags.DEFINE_integer('index', '0', 'the selecte index of input image')
 
 # Define placeholders(dict) and model

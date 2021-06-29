@@ -15,4 +15,4 @@ patch_num=8
 wce=1.5
 python volume_train/train_end2end.py --batchSize $batchsize --nepoch $nepoch --category $cat \
     --load_sperate  --model_ske $model_ske  --model_vol $model_vol --env $env --super_points 2500 --samples_line 4000 --samples_triangle 24000 \
-    --lr1 $lr1 --lr2 $lr2 --lrStep $lrStep --patch_num $patch_num --start_eval_epoch $start_eval_epoch --woptfeat --weight_ce $wce --weight_pts $weight_pts --weight_vox $weight_vox
+    --lr1 $lr1 --lr2 $lr2 --lrStep $lrStep --patch_num $patch_num --start_eval_epoch $start_eval_epoch --weight_pts $weight_pts --weight_vox $weight_vox #--woptfeat --weight_ce $wce

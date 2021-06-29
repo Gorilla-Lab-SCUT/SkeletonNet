@@ -1,6 +1,7 @@
 # Skeleton-Regularized Deep Implicit Surface Network (SkeDISN)
+<p align="center">
 <img src="images/SkeDISN.png"  />
-
+</p>
 
 ## System Requirements
   * ### GPU: 1080Ti (Other models can consider decrease the batch size if overflow)
@@ -32,13 +33,17 @@
     Install whatever libary(e.g. mkl) you don't have and change corresponding libary path in your system in isosurface/LIB_PATH
   ```
 ## Demo:
+ * You can download [the pre-trained model of SkeDISN](https://drive.google.com/file/d/1qMebY8qdbwCFRSTzJZoQ8T7sd9o4Mbu6/view?usp=sharing) and unzip it to the ```./checkpoint/skedisn_occ``` folder.
  * --sdf_res control the resolution of the sampled sdf, default is 64, the larger, the more fine-grained, but slower.
   ```
     cd {SkeDISN}
     source isosurface/LIB_PATH
-    nohup python -u demo/demo.py --log_dir checkpoint/SkeDISN --img_feat_twostream --sdf_res 256 &> log/create_sdf.log &
-  ``` 
-  The result is demo/result.obj.
+    python test/create_sdf_add_skevox.py --ske_local_patch_share --binary  --img_feat_twostream --sdf_res 256 --log_dir checkpoint/skedisn_occ --use_predvox --predvox_dir  {specify your predicted skeleton volume directory} --img_path 03001627_1e304b967d5253d5dd079f8cece51712_00
+  ```
+  or run this script:
+  ```
+    bash scripts/demo.sh
+  ```
   if you have dependency problems such as your mkl lib, etc. Please install the corresponding dependencies and change the path in LIB_PATH. Everyone has his/her/their own environment setting so it's impossible to instruct this step without sitting besides you and your server.
  
 ## Data Preparation
@@ -118,12 +123,22 @@
 
   * #### Then we freeze the pretrained network of DISN and only train the skeleton-branch.
   ```
-  python train/train_sdf_skevox_mulpac.py --free_onlylocal --ske_local_patch_share --gpu 0 --binary --img_feat_twostream --restore_modeldisn checkpoint/disn_occ/model.ckpt  --log_dir checkpoint/skedisn_occ --category all --num_sample_points 2048 --max_epoch 20 --batch_size 10 --learning_rate 0.00003 --decay_step 80000 --cat_limit 36037 --use_predvox --predvox_dir {specify your predicted skeleton volume directory} &> log/SkeDISN_train_all.log &
+  python train/train_sdf_add_skevox.py --free_onlylocal --ske_local_patch_share --gpu 0 --binary --img_feat_twostream --restore_modeldisn checkpoint/disn_occ/model.ckpt  --log_dir skedisn_freeskeleton_occ --category all --num_sample_points 2048 --max_epoch 20 --batch_size 10 --learning_rate 0.00003 --decay_step 80000 --cat_limit 36037 --use_predvox --predvox_dir {specify your predicted skeleton volume directory} &> log/SkeDISN_train_all.log &
+  ```
+  or run this script:
+  ```
+  bash scripts/SkeDISNOcc_freeskeleton.sh
+  ```
+
+  * #### Finally, we free all network parameters of SkeDISN.
+  ```
+  python train/train_sdf_add_skevox.py --ske_local_patch_share --gpu 0 --binary --img_feat_twostream --restore_model skedisn_freeskeleton_occ--restore_modeldisn checkpoint/disn_occ/model.ckpt  --log_dir skedisn_occ --category all --num_sample_points 2048 --max_epoch 10 --batch_size 10 --learning_rate 0.000003 --decay_step 80000 --cat_limit 36037 --use_predvox --predvox_dir {specify your predicted skeleton volume directory} &> log/SkeDISN_train_all.log &
   ```
   or run this script:
   ```
   bash scripts/SkeDISNOcc.sh
   ```
+
 
 * ### inference occupancy fields and create mesh objects from a single-view image:
 
@@ -134,10 +149,11 @@
   * --sdf_res control the resolution of the sampled sdf, default is 64, the larger, the more fine-grained, but slower.
   ```
   source isosurface/LIB_PATH
-
+  ```
   #### use ground truth camera pose
   ```
-  nohup python -u test/create_sdf_add_skevox.py --ske_local_patch_share --binary --img_feat_twostream --sdf_res 64 --gpu 0 --log_dir checkpoint/skedisn_occ --restore_modeldisn checkpoint/disn_occ/model.ckpt --category all --use_predvox --predvox_dir {specify your predicted skeleton volume directory} --test_allset &> log/SkeDISN_create_all.log &
+  source isosurface/LIB_PATH
+  nohup python -u test/create_sdf_add_skevox.py --ske_local_patch_share --binary --img_feat_twostream --sdf_res 64 --gpu 0 --log_dir checkpoint/skedisn_occ --category all --use_predvox --predvox_dir {specify your predicted skeleton volume directory} --test_allset &> log/SkeDISN_create_all.log &
   ```
   or
   ```
@@ -153,7 +169,7 @@
 
 * ### Although trained for single-view reconstruction, our proposed SkeDISN can be directly extended for mesh reconstruction from multi-view images:
   ```
-  nohup python -u test/create_sdf_add_skevox.py --ske_local_patch_share --binary --img_feat_twostream --sdf_res 64 --gpu 0 --log_dir checkpoint/skedisn_occ --restore_modeldisn checkpoint/disn_occ/model.ckpt --category all --use_predvox --predvox_dir {specify your predicted skeleton volume directory} --view_num 3 {specify the number of input views} --test_allset &> log/mutiview_SkeDISN_create_all.log &
+  nohup python -u test/create_sdf_add_skevox.py --ske_local_patch_share --binary --img_feat_twostream --sdf_res 64 --gpu 0 --log_dir checkpoint/skedisn_occ --category all --use_predvox --predvox_dir {specify your predicted skeleton volume directory} --view_num 3 {specify the number of input views} --test_allset &> log/mutiview_SkeDISN_create_all.log &
   ```
   or
   ```

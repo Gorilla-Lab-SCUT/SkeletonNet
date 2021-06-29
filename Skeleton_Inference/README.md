@@ -19,6 +19,17 @@ cd ..
 python setup.py build_ext --inplace
 ```
 
+## Demo
+* We provide a demo for skeletal volume generation from RGB images via learning immediate skeletal points.
+You can download the pretrained model from [here](https://drive.google.com/file/d/1WH0Nf30AWFOkBo0oWL9bzlNIWPvnwDiR/view?usp=sharing), and put it under the ```checkpoints/all``` folder.
+* Run the demo by the below script:
+```shell 
+python demo/demo.py --model checkpoints/all/SkeletonNet.pth --num_points_line 4000 --num_points_square 20000 --samples_line 0 --samples_triangle 0 --save_vox_h5 --save_mesh --save_ske --inpimg ../demo_images/03001627_1e304b967d5253d5dd079f8cece51712_00.png --outdir ../demo_results
+```
+or run this script:
+```shell 
+bash scripts/all/demo.sh
+```
 
 ## Training
 1. SkeAE: Skeletal points auto encoder
@@ -52,7 +63,7 @@ python volume_eval/eval_end2end.py  --category chair --model $model_end2end --ou
    
 2. Evaluating skeletal point sets by Chamfer distance
 ```shell 
-python skeletal_eval/eval_cd.py --category chair --log_dir ./skeleton_eval --cal_dir $your skeleton output_dir
+python skeletal_eval/eval_cd.py --category all --log_dir ./skeleton_eval --cal_dir $your skeleton output_dir
 ```
 
 ## Skeletal Volume Generation & Evaluation
@@ -71,11 +82,3 @@ python volume_gen/gen_end2end.py --category all --model $model_end2end --th $thr
 ```
 * When extracting coarse meshes to bridge explicit mesh generation, you need to add ```--save_mesh --outdir_mesh $your basemesh output_dir```.
 * When generating refined volumes to regularize implicit mesh generation, you need to add ```--save_vox_h5 --outdir_vox $your volume output dir```.
-
-## Demo
-* We provide a demo for skeletal volume generation from RGB images via learning immediate skeletal points.
-You can download the pretrained model from [here](https://drive.google.com/file/d/1I5QmNDhuJu4Er2VKN7mZ7uzJjnu8gQqn/view?usp=sharing), and put it under the ```checkpoints/all``` folder.
-* Run the demo by the below scrript:
-```shell 
-python demo/demo.py --model checkpoints/all/SkeletonNet.pt --woptfeat --save_mesh --save_ske --inpimg your image path
-```

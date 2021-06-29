@@ -9,4 +9,4 @@ lr=1e-4
 patch_num=32
 eval_epoch=0
 wce=1.5
-python volume_train/train_local.py --batchSize $batchsize --nepoch $nepoch  --category $cats --model_ske $model_ske --model_glo $model_glo --env $env --lr $lr  --patch_num $patch_num --start_val_epoch $eval_epoch --weight_ce $wce
+python volume_train/train_local.py --batchSize $batchsize --nepoch $nepoch  --category $cats --model_ske $model_ske --model_glo $model_glo --env $env --lr $lr  --patch_num $patch_num --start_val_epoch $eval_epoch #--weight_ce $wce

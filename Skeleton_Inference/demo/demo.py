@@ -59,11 +59,11 @@ parser.add_argument('--guidance_only64', action='store_true', default=False)
 parser.add_argument('--load_sperate', action='store_true', default=False)
 
 parser.add_argument('--th', type=float, default=0.3, help='the thresold to compute IoU')
+parser.add_argument('--save_vox_h5', action='store_true')
 parser.add_argument('--save_mesh', action='store_true')
 parser.add_argument('--save_ske', action='store_true')
 parser.add_argument('--inpimg', type=str, default = './demo/images.png')
-parser.add_argument('--outdir', type=str, default = './demo/pretrained_results')
-parser.add_argument('--rotate', action='store_true')
+parser.add_argument('--outdir', type=str, default = './demo/results')
 parser.add_argument('--woptfeat', action='store_true')
 opt = parser.parse_args()
 print (opt)
@@ -88,14 +88,9 @@ if opt.load_sperate:
     print(" Previous volume weight loaded ")
 
 #Create network
-if opt.rotate:
-    network = ImgToVolume_Rotate( pretrained_encoder=False, num_points_line = opt.num_points_line, num_points_square = opt.num_points_square,
+network = ImgToVolume( pretrained_encoder=False, num_points_line = opt.num_points_line, num_points_square = opt.num_points_square,
     bottleneck_size = opt.bottleneck_size, nb_primitives_line = opt.nb_primitives_line, nb_primitives_square = opt.nb_primitives_square,
     num_samples_line=opt.samples_line, num_samples_triangle=opt.samples_triangle, global_only64=opt.guidance_only64, woptfeat=opt.woptfeat)
-else:
-    network = ImgToVolume( pretrained_encoder=False, num_points_line = opt.num_points_line, num_points_square = opt.num_points_square,
-        bottleneck_size = opt.bottleneck_size, nb_primitives_line = opt.nb_primitives_line, nb_primitives_square = opt.nb_primitives_square,
-        num_samples_line=opt.samples_line, num_samples_triangle=opt.samples_triangle, global_only64=opt.guidance_only64, woptfeat=opt.woptfeat)
 network.grid1 = grid1
 network.grid2 = grid2
 network.lines_array = lines_array
@@ -136,7 +131,7 @@ def fetch_data(inpimg):
     vol256 = torch.zeros((1, 256, 256, 256)).long()
     return data, point_set_skeleton, point_set_line, point_set_square, vol32, vol64, vol128, vol256
 
-if opt.save_mesh or opt.save_ske:
+if opt.save_mesh or opt.save_ske or opt.save_vox_h5:
     outdir = opt.outdir
     if not os.path.exists(outdir):
         os.mkdir(outdir)
@@ -145,6 +140,9 @@ network.eval()
 with torch.no_grad():
     t0=time.time()
     inpimg = opt.inpimg
+    filename = inpimg.split('/')[-1]
+    filename = filename[:-4] #remove .png
+    cat, mod, idx = filename.split('_')
     img, points_skeleton, points_line, points_square, voxelGT32, voxelGT64, voxelGT128, voxelGT256 = fetch_data(inpimg)
     indices_array = []
     for bidx in range(img.size(0)):
@@ -165,11 +163,25 @@ with torch.no_grad():
     prediction128, batch_iou128 = eval_iou_res128(1, occupancy_patch36, voxelGT128, opt.th)
     prediction256, batch_iou256, batch_pre, batch_rec = eval_iou_pre_rec_res256(1, occupancy_patch72, voxelGT256, opt.th)
 
+    if opt.save_vox_h5:
+        catmod_out_dir_vox = os.path.join(outdir, 'SkeVolume', cat, mod)
+        if not os.path.exists(catmod_out_dir_vox):
+            os.makedirs(catmod_out_dir_vox)
+        outfile64 = os.path.join(catmod_out_dir_vox, '64_max_fill.h5')
+        outfile128 = os.path.join(catmod_out_dir_vox, '128_max_fill.h5')
+        outfile256 = os.path.join(catmod_out_dir_vox, '256_max_fill.h5')
+        prediction64 = F.softmax(occupany64, dim=1)
+        prediction64 = torch.ge(prediction64[:, 1, :, :, :], opt.th).type(torch.cuda.FloatTensor)
+        _, prediction64_numpy = holefill_cpu(prediction64[0].data.cpu().numpy())
+        _, prediction128_numpy = holefill_cpu(prediction128[0].data.cpu().numpy())
+        _, prediction256_numpy = holefill_cpu(prediction256[0].data.cpu().numpy())
+        save_voxel_h5py(prediction64_numpy, outfile64)
+        save_voxel_h5py(prediction128_numpy, outfile128)
+        save_voxel_h5py(prediction256_numpy, outfile256)
     if opt.save_mesh:
-        save_volume_obj(outdir, './', 'demo_basemesh', prediction256[0], voxelGT256[0], holefill=True)
+        save_volume_obj(outdir, cat, mod+'_'+idx, prediction256[0], voxelGT256[0], holefill=True)
     if opt.save_ske:
-        save_skeleton_ply(outdir, './', 'CurSke', pointsReconstructed_cur[0])
-        save_skeleton_ply(outdir, './','SurSke', pointsReconstructed_sur[0])
-        save_skeleton_ply(outdir, './', 'AllSke', pointsReconstructed[0])
-
+        save_skeleton_ply(outdir, cat, mod+'_Cur', pointsReconstructed_cur[0])
+        save_skeleton_ply(outdir, cat, mod+'_Sur',  pointsReconstructed_sur[0])
+        save_skeleton_ply(outdir, cat, mod+'_All', pointsReconstructed[0])
     print(opt.inpimg, time.time()-t0)

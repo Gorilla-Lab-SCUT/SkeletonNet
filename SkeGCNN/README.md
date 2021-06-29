@@ -27,10 +27,10 @@ cd ..
 ```
 
 ## Demo
-You can Download the [pre-trained model]() and unzip it to the ```./data/SkeGCNN_pretrain``` folder.
+You can download [the pre-trained model of SkeGCNN](https://drive.google.com/file/d/1F7tTIMFyw-Yz6dTGRy3s1Aw_XfaRGUUa/view?usp=sharing) and unzip it to the ```./checkpoint/skegcnn``` folder.
 ```shell
 basemesh_root='your base mesh folder'
-checkpoint='./data/SkeGCNN_pretrain'
+checkpoint='./checkpoint/skegcnn'
 bash scripts/demo.sh
 ```
 
